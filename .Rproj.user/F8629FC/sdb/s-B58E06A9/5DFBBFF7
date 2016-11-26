@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1480203707831.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5DFBBFF7",
+    "lastKnownWriteTime" : 1480204250,
+    "last_content_update" : 1480204250486,
+    "path" : "~/Documents/GPDD_temperature_trait_additions/Assemble_data.R",
+    "project_path" : "Assemble_data.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
