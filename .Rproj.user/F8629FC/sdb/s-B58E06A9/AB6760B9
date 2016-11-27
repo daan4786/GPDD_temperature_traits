@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\n############\n#Problem 1\n############\n\nlibrary(raster)\nlibrary(rgdal)\n\n\ndsm_harv <- raster(\"./NEON-airborne/HARV_dsmCrop.tif\")\n\ndtm_harv <- raster(\"./NEON-airborne/HARV_dtmCrop.tif\")\n\ndsm_sjer <- raster(\"./NEON-airborne/SJER_dsmCrop.tif\")\n\ndtm_sjer <- raster(\"./NEON-airborne/SJER_dtmCrop.tif\")\n\n#1\n#works like a vector. The difference between surface model and terrain model is canopy height.\nchm_harv <- dsm_harv - dtm_harv\n\nchm_sjer <- dsm_sjer - dtm_sjer\n\n#2\n#plot the canopy height.\npar(mfrow = c(2, 2), mar = c(5, 4, 2, 2))\nplot(chm_harv, main = \"Harvard\")\nhist(chm_harv, main = \"Harvard\")\nplot(chm_sjer, main = \"San Joaquin\")\nhist(chm_sjer, main = \"San Joaquin\")\n\n\n#3\n\nplots_harv <- readOGR(\"./NEON-airborne/plot_locations/\", \"HARV_plots\")  #Maybe need project going to do this.\nplots_sjer <- readOGR(\"./NEON-airborne/plot_locations/\", \"SJER_plots\")  #Maybe need project going to do this.\n\n#Need same projection to plot together\n#Make crs(plots_harv) = crs(dtm_harv)\n\nplots_harv_utm18 <- spTransform(plots_harv, crs(dtm_harv))\nplots_sjer_utm18 <- spTransform(plots_sjer, crs(dtm_sjer))\n\npar(mfrow = c(2, 2), mar = c(5, 4, 2, 2))\nplot(chm_harv, main = \"Harvard\")\nplot(plots_harv_utm18, add = TRUE)\nplot(chm_sjer, main = \"San Joaquin\")\nplot(plots_sjer_utm18, add = TRUE)\nhist(chm_harv, main = \"Harvard\")\nhist(chm_sjer, main = \"San Joaquin\")\n\n\n\nextract(chm_harv, plots_harv_utm18, buffer = 10, fun = max) #mean elevation in a 10m radius around my points\nextract(chm_sjer, plots_sjer_utm18, buffer = 10, fun = max) #mean elevation in a 10m radius around my points\n\n\n############\n#Problem 2\n############\nlibrary(rasterVis)\nlibrary(dplyr)\nlibrary(ggplot2)\n#Compile time series of NDVI from a set of files\nharv_files <- list.files(\"./NEON-airborne/HARV_NDVI\", pattern = \".tif$\", full.names = TRUE)\n#\"Stack\" files into a series, ordered by time\nharv_rasters <- stack(harv_files)\n\n#Create Harv data frame for plot\navg_ndvi_df_harv <- cellStats(harv_rasters, mean)\navg_ndvi_df_harv <- data.frame(avg_ndvi_df_harv)\ncolnames(avg_ndvi_df_harv) <- \"Mean_NDVI\"\nsamplingPeriod <- seq(1, length(avg_ndvi_df_harv$Mean_NDVI), by = 1)\navg_ndvi_df_harv <- cbind(avg_ndvi_df_harv, samplingPeriod)\n\n#Compile time series of NDVI from a set of files\nsjer_files <- list.files(\"./NEON-airborne/SJER_NDVI\", pattern = \".tif$\", full.names = TRUE)\n#\"Stack\" files into a series, ordered by time\nsjer_rasters <- stack(sjer_files)\n\navg_ndvi_df_sjer <- cellStats(sjer_rasters, mean)\navg_ndvi_df_sjer <- data.frame(avg_ndvi_df_sjer)\ncolnames(avg_ndvi_df_sjer) <- \"Mean_NDVI\"\nsamplingPeriod <- seq(1, length(avg_ndvi_df_sjer$Mean_NDVI), by = 1)\navg_ndvi_df_sjer <- cbind(avg_ndvi_df_sjer, samplingPeriod)\n\n\n\nggplot() + geom_point(data = avg_ndvi_df, aes(x = samplingPeriod, y = Mean_NDVI, color = \"a\")) + \n  geom_point(data = avg_ndvi_df_sjer, aes(x = samplingPeriod, y = Mean_NDVI, color = \"b\")) + \n  scale_color_manual(name = \"Site\", values = c(\"a\" = \"green\", \"b\" = \"orange\"), labels = c(\"Harv\", \"SJER\"))\n  \n#In general, harvard forest tends to be more densely populated \n#and to contain larger trees than San Joaquin forest. Harvard forest also tends \n#to be much greener, on average, than San Joaquin forest during winter months. \n#In fact, San Joaquin forest is greenest during winter months.\n\n\n",
+    "created" : 1480205312986.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3927055108",
+    "id" : "AB6760B9",
+    "lastKnownWriteTime" : 1478575299,
+    "last_content_update" : 1478575299,
+    "path" : "~/Documents/Fall_2016_coursework/DataCarpentry/HW_8_datacarpentry/HW_8_code.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

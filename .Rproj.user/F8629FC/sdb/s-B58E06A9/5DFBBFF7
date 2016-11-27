@@ -1,14 +1,14 @@
 {
     "collab_server" : "",
-    "contents" : "",
+    "contents" : "library(rgpdd)\nlibrary(dplyr)\nlibrary(raster)\nlibrary(rgdal)\n\n#Read in average monthly temperatures from WorldClim (Hijmans, R. J. et al. 2005. Very high resoluction interpolated climate surfaces for flobal land areas.)\n#Data is in degrees celcius * 10.\ntemp_1_data <- raster(\"./tmean_10m_bil/tmean1.bil\")\ntemp_2_data <- raster(\"./tmean_10m_bil/tmean2.bil\")\ntemp_3_data <- raster(\"./tmean_10m_bil/tmean3.bil\")\ntemp_4_data <- raster(\"./tmean_10m_bil/tmean4.bil\")\ntemp_5_data <- raster(\"./tmean_10m_bil/tmean5.bil\")\ntemp_6_data <- raster(\"./tmean_10m_bil/tmean6.bil\")\ntemp_7_data <- raster(\"./tmean_10m_bil/tmean7.bil\")\ntemp_8_data <- raster(\"./tmean_10m_bil/tmean8.bil\")\ntemp_9_data <- raster(\"./tmean_10m_bil/tmean9.bil\")\ntemp_10_data <- raster(\"./tmean_10m_bil/tmean10.bil\")\ntemp_11_data <- raster(\"./tmean_10m_bil/tmean11.bil\")\ntemp_12_data <- raster(\"./tmean_10m_bil/tmean12.bil\")\n\ncrs(temp_1_data)\nx <- extract(temp_1_data)\nlat_long_1_df <- rasterToPoints(temp_1_data, spatial = T)\ncord_ref <- \"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0\"\nlat_long_1 <- spTransform(lat_long_1_df, CRS(cord_ref))\nhead(lat_long_1)\n#I'm interested in 2 values for terrestrial organisms: average annual temperature, and average temperatures during the \"growing season,\" April - October in Northern latitudes.\n\navg_annual_temp <- mean(temp_1_data, temp_2_data, temp_3_data, temp_4_data, temp_5_data, temp_6_data, temp_7_data, temp_8_data, temp_9_data, temp_10_data, temp_11_data, temp_12_data)\nplot(avg_annual_temp / 10)\n\n\n#To use extract, I think that I need the Lat-long values as a raster, in the same projection as the WorldClim data\nhead(gpdd_location)\nlocation_ID <- inner_join(gpdd_location, gpdd_main, by = \"LocationID\")\nlocations_gpdd <- location_ID %>% dplyr::select(LongDD, LatDD, MainID) %>% matrix()\nhead(locations_gpdd)\ne <- extent(locations_gpdd[,1:2])\nx <- rasterize(locations_gpdd[,1:2], location_ID, locations_gpdd[,3], fun=mean)\nraster_gpdd_locations <- rasterFromXYZ(locations_gpdd)\n",
     "created" : 1480203707831.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "0",
+    "hash" : "3042865449",
     "id" : "5DFBBFF7",
-    "lastKnownWriteTime" : 1480204250,
-    "last_content_update" : 1480204250486,
+    "lastKnownWriteTime" : 1480214252,
+    "last_content_update" : 1480214252556,
     "path" : "~/Documents/GPDD_temperature_trait_additions/Assemble_data.R",
     "project_path" : "Assemble_data.R",
     "properties" : {
