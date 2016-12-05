@@ -96,8 +96,13 @@ monthly_temp_df <- read.csv("./WorldClim_avg_monthly_temp.csv", stringsAsFactors
 
 head(monthly_temp_df)
 
+avgs_ordered_wc <- monthly_temp_df %>% mutate(avg_april_oct = mean(c(tmean4,tmean5,tmean6,tmean7,tmean8,tmean9,tmean10)), 
+                           avg_annual = mean(c(tmean1,tmean2,tmean3,tmean4,tmean5,tmean6,tmean7,tmean8,tmean9,tmean10,tmean11,tmean12))) %>%
+                            arrange(desc(Lat.x), Long) %>% dplyr::select(Long, Lat.x, avg_april_oct, avg_annual)
+write.csv(file = "World_clim_data_org_for_cycles_proj.csv", avgs_ordered_wc)
+head(avgs_ordered_wc)
 #Check - should see temperature gradient along lat
-monthly_temp_df %>% ggplot() + geom_point(aes(x = Lat.x, y = tmean1 / 10), alpha = 0.01)
+#monthly_temp_df %>% ggplot() + geom_point(aes(x = Lat.x, y = tmean1 / 10), alpha = 0.01)
 
 #########################################################
 #
@@ -205,14 +210,34 @@ gpdd_location_temp_an <- read.csv("Avg_wc_temp_for_GPDD_pops.csv", stringsAsFact
 
 
 life_history_data <- read.csv("./GPDD_Taxon_specific_info.csv", stringsAsFactors = F)
+
+head(life)
+str(more_lf_dat_insects)
+
+
+#1. I want temperature data and life history data available in their respective data tables.
+#   These data tables will open upon running the library.
+
+
+
+
+
+
+
+
+
+
+#misc
+life_history_data %>% filter(!is.na(Mass_kg))
+nrow(gpdd_taxon)
 str(life_history_data)
 
 check_sibly <- inner_join(gpdd_taxon, life_history_data, by = "TaxonID") %>%
   inner_join(., gpdd_main, by = "TaxonID")
 
 check_sibly %>% filter(SiblyReturnRate > 0) %>% 
-  ggplot() + geom_point(aes(x = log(Mass_kg), y = log(SiblyReturnRate), color = Class)) + 
-  geom_smooth(aes(x = log(Mass_kg), y = log(SiblyReturnRate), color = Class), method = "lm", se = F) + 
+  ggplot() + geom_point(aes(x = log(age_first_reproduction_years), y = log(SiblyReturnRate), color = Class)) + 
+  geom_smooth(aes(x = log(age_first_reproduction_years), y = log(SiblyReturnRate)), method = "lm", se = F) + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line.x = element_line(color = "black"), axis.line.y = element_line(color = "black"), text = element_text(size = 15), legend.position = "bottom")
 check_sibly %>% filter(SiblyReturnRate > 0, Class == "Mammalia") %>% do(tidy(lm(log(SiblyReturnRate) ~ log(Mass_kg), data = .)))
 life_history_and_location <- inner_join(check_sibly, gpdd_location_temp_an, by = "LocationID")
@@ -241,7 +266,7 @@ all_temp %>% ggplot() + geom_point(aes(x = age_first_reproduction_years, y = 1 /
 
 
 all_temp %>% ggplot() + geom_point(aes(x = age_first_reproduction_years, y = DatasetLength * (1 / SamplingFrequency), color = Class), size = 2, alpha = 0.2) +
-  geom_smooth(aes(x = age_first_reproduction_years, y = DatasetLength * (1 / SamplingFrequency))) +
+  geom_smooth(aes(x = age_first_reproduction_years, y = DatasetLength * (1 / SamplingFrequency)), span = 0.1) +
   scale_x_log10() + scale_y_log10() + xlab("Maturation time (yr)") + ylab("Length of time series (yr)") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line.x = element_line(color = "black"), axis.line.y = element_line(color = "black"), text = element_text(size = 15), legend.position = "bottom")
 
