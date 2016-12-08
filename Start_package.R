@@ -1,0 +1,6 @@
+install.packages("devtools")
+library(devtools)
+devtools::install_github("klutometis/roxygen")
+library(magrittr)
+library(roxygen2)
+create("cats")

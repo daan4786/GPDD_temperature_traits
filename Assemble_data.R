@@ -35,7 +35,7 @@ library(ggplot2)
  temp_10_data <- raster("./tmean_10m_bil/tmean10.bil")
  temp_11_data <- raster("./tmean_10m_bil/tmean11.bil")
  temp_12_data <- raster("./tmean_10m_bil/tmean12.bil")
-
+plot(temp_7_data)
 # I want to aggregate this data to a spatial scale larger than 1 Km^2, as many of the populations occupy larger spatial areas.
 # I choose to aggregate a 5 cell radius, changing the resolution from 0.1667 Lat Long to 0.8333 Lat Long
  
@@ -123,9 +123,7 @@ avgs_ordered_wc <- monthly_temp_df %>% rowwise %>% mutate(avg_april_oct = mean(c
                             arrange(desc(Lat.x)) %>% dplyr::select(Long, Lat.x, avg_april_oct, avg_annual, avg_oct_march)
 write.csv(file = "World_clim_data_org_for_cycles_proj_agg.csv", avgs_ordered_wc)
 
-subset(avgs_ordered_wc, Long == 138.75 & Lat.x < -34 & Lat.x > -34.6)
 
-head(avgs_ordered_wc)
 #Check - should see temperature gradient along lat
 #monthly_temp_df %>% ggplot() + geom_point(aes(x = Lat.x, y = tmean1 / 10), alpha = 0.01)
 
@@ -219,7 +217,10 @@ head(avgs_ordered_wc)
 # 
 
 gpdd_location_temp_an <- read.csv("Avg_wc_temp_for_GPDD_pops.csv", stringsAsFactors = F)
-str(gpdd_location_temp_an)
+nrow(gpdd_location_temp_an)
+nrow(gpdd_location)
+anti_join(gpdd_location_temp_an, gpdd_location, by = "LocationID")
+anti_join( gpdd_location, gpdd_location_temp_an, by = "LocationID")
 
 #########################################################
 #
@@ -237,18 +238,16 @@ anti_join(life_history_data, gpdd_taxon, by = "TaxonID")
 missing_ids <- anti_join(gpdd_taxon,life_history_data, by = "TaxonID")
 
 missing_ids_tack_on <- missing_ids %>% dplyr::select(TaxonID, TaxonomicClass, CommonName, TaxonName)
-colnames(life_history_data)
+
 missing_ids_tack_on <- data.frame(TaxonID = missing_ids_tack_on$TaxonID, Class = missing_ids_tack_on$TaxonomicClass, Thermo = character(nrow(missing_ids_tack_on)),
                                   CommonName = missing_ids_tack_on$CommonName, TaxonName = missing_ids_tack_on$TaxonName)
 col_names <- life_history_data[1:nrow(missing_ids_tack_on),6:29]
 col_names[] <- NA
 missing_ids_tack_on <- cbind(missing_ids_tack_on, col_names)
-colnames(missing_ids_tack_on)
+
 
 life_history_data <- rbind(life_history_data, missing_ids_tack_on)
-length(missing_ids_tack_on)
-length(life_history_data)
-tail(life_history_data)
+
 
 write.csv(file="GPDD_taxon_traits.csv", life_history_data)
 
@@ -275,22 +274,32 @@ check_sibly <- inner_join(gpdd_taxon, life_history_data, by = "TaxonID") %>%
   inner_join(., gpdd_main, by = "TaxonID")
 
 check_sibly %>% filter(SiblyReturnRate > 0) %>% 
-  ggplot() + geom_point(aes(x = log(age_first_reproduction_years), y = log(SiblyReturnRate), color = Class)) + 
-  geom_smooth(aes(x = log(age_first_reproduction_years), y = log(SiblyReturnRate)), method = "lm", se = F) + 
+  ggplot() + geom_point(aes(x = log(Mass_kg), y = log(SiblyReturnRate), color = Class)) + 
+  geom_smooth(aes(x = log(Mass_kg), y = log(SiblyReturnRate), color = Class), method = "lm", se = F) + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line.x = element_line(color = "black"), axis.line.y = element_line(color = "black"), text = element_text(size = 15), legend.position = "bottom")
 check_sibly %>% filter(SiblyReturnRate > 0, Class == "Mammalia") %>% do(tidy(lm(log(SiblyReturnRate) ~ log(Mass_kg), data = .)))
 life_history_and_location <- inner_join(check_sibly, gpdd_location_temp_an, by = "LocationID")
 head(life_history_and_location)
 
-ect_body_temp <- life_history_and_location %>% filter(Thermo == "Ectotherm") %>% mutate(temp = Average_annual_temp) %>% dplyr::select(MainID.x, temp)
-end_body_temp <- life_history_and_location %>% filter(Thermo == "Endotherm") %>% mutate(temp = Temp) %>% dplyr::select(MainID.x, temp)
+ect_body_temp <- life_history_and_location %>% filter(Thermo == "Ectotherm") %>% mutate(temp = Average_annual_temp) %>% dplyr::select(MainID, temp)
+end_body_temp <- life_history_and_location %>% filter(Thermo == "Endotherm") %>% mutate(temp = Temp) %>% dplyr::select(MainID, temp)
 
 all_temp <- rbind(ect_body_temp, end_body_temp)
 
-all_temp <- inner_join(all_temp, life_history_and_location, by = "MainID.x")
+all_temp <- inner_join(all_temp, life_history_and_location, by = "MainID")
 library(broom)
 exp <- all_temp %>% filter(SiblyReturnRate > 0, Reliability > 1, (Class == "Mammalia" | Class == "Insecta" | Class == "Aves")) %>% 
-  do(tidy(lm(log(SiblyReturnRate) ~ log(Mass_kg) + temp, data = .)))
+  do(tidy(lm(log(SiblyCarryingCapacity) ~ log(Mass_kg) + Temp, data = .)))
+all_temp %>% filter(SiblyReturnRate > 0, Reliability > 1, Class == "Mammalia") %>% 
+  do(tidy(lm(log(SiblyCarryingCapacity) ~ log(Mass_kg), data = .)))
+all_temp %>% filter(SiblyReturnRate > 0, Reliability > 1) %>% ggplot() + geom_point(aes(x = log(Mass_kg), y = log(SiblyCarryingCapacity), color = Class)) + 
+  geom_smooth(aes(x = log(Mass_kg), y = log(SiblyCarryingCapacity), color = Class), method="lm", se=F)
+
+all_temp %>% filter(SiblyReturnRate > 0, Reliability > 1) %>% 
+  ggplot() + geom_point(aes(x = Mass_kg, y = SiblyCarryingCapacity, color = SpatialDensity)) + scale_x_log10() + scale_y_log10()
+
+unique(gpdd_main$SpatialDensity)
+gpdd_main  %>% group_by(SpatialDensity) %>% summarize(n=n()) %>% ungroup() %>% data.frame()
 
 
 all_temp %>% filter(SiblyReturnRate > 0, Reliability > 1, (Class == "Mammalia" | Class == "Insecta" | Class == "Aves")) %>%
