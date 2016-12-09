@@ -39,6 +39,7 @@ plot(temp_7_data)
 # I want to aggregate this data to a spatial scale larger than 1 Km^2, as many of the populations occupy larger spatial areas.
 # I choose to aggregate a 5 cell radius, changing the resolution from 0.1667 Lat Long to 0.8333 Lat Long
  
+# note - i did not aggregate data initially in order to create the file WorldClim_avg_monthly_temp.csv
 temp_1_data_agg <- aggregate(temp_1_data, 5, fun=mean)
 res(temp_1_data_agg)
 res(temp_1_data)
